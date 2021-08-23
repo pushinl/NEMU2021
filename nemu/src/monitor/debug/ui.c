@@ -44,6 +44,23 @@ static int cmd_si(char *args) {
 	return 0;
 }
 
+static int cmd_info(char *args) {
+	if(args == NULL) return 0;
+	char opt;
+	sscanf(args, " %c", &opt);
+	if(opt == 'r') {
+		printf("%%eax: 0x%x", cpu.eax);
+		printf("%%ecx: 0x%x", cpu.ecx);
+		printf("%%edx: 0x%x", cpu.edx);
+		printf("%%ebx: 0x%x", cpu.ebx);
+		printf("%%esp: 0x%x", cpu.esp);
+		printf("%%ebp: 0x%x", cpu.ebp);
+		printf("%%esi: 0x%x", cpu.esi);
+		printf("%%edi: 0x%x", cpu.edi);
+	}
+	return 0;
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -53,6 +70,7 @@ static struct {
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
 	{ "si", "Excecute the program N steps", cmd_si },
+	{ "info", "Print the value of registers", cmd_info },
 	/* TODO: Add more commands */
 
 };
