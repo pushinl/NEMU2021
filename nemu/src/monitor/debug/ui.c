@@ -72,7 +72,7 @@ static int cmd_x(char *args) {
 		uint32_t data = swaddr_read(ram_addr_start + i*4, 4);
 		printf("0x%x: ", ram_addr_start + i*4);
 		for(j = 0; j < 4; j++){
-			printf("0x%02x ", data);
+			printf("0x%02x ", data & 0xff);
 			data = data >> 8;
 		}
 		printf("\n");
