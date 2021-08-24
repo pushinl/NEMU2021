@@ -69,9 +69,9 @@ static int cmd_x(char *args) {
 	//printf("%x", ram_addr_start);
 	int i, j;
 	for(i = 0; i < n; i++) {
-		printf("0x%x: ", ram_addr_start + i*4);
+		printf("0x%x: ", ram_addr_start);
 		for(j = 0; j < 4; j++){
-			uint32_t data = swaddr_read(ram_addr_start + i*4, 1);
+			uint32_t data = swaddr_read(ram_addr_start++, 1);
 			printf("0x%02x ", data & 0xff);
 		}
 		printf("\n");
