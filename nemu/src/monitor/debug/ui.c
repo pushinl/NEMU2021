@@ -70,9 +70,10 @@ static int cmd_x(char *args) {
 	int i, j;
 	for(i = 0; i < n; i++) {
 		uint32_t data = swaddr_read(ram_addr_start + i*4, 4);
-		printf("0x%x : ", ram_addr_start + i*4);
+		printf("0x%x: ", ram_addr_start + i*4);
 		for(j = 0; j < 4; j++){
-			printf("0x%x ", data << j);
+			printf("0x%x ", data);
+			data = data >> 1;
 		}
 		printf("\n");
 	}
