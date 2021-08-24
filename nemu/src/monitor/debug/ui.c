@@ -64,10 +64,14 @@ static int cmd_info(char *args) {
 static int cmd_x(char *args) {
 	if(args == NULL) return 0;
 	int n;
+	//char *addr_start;
 	uint32_t ram_addr_start;
-	sscanf(args, " %d 0x%d", &n, &ram_addr_start);
-	printf("%d 0x%d", n, ram_addr_start);
-	/*
+	sscanf(args, " %d %x", &n, &ram_addr_start);
+	printf("%x", ram_addr_start);
+	/*while(*addr_start){
+		ram_addr_start = (ram_addr_start << 4) + (*addr_start);
+		addr_start++;
+	}
 	int i, j;
 	for(i = 0; i < n; i++) {
 		uint32_t data = swaddr_read(ram_addr_start + i*4, 4);
