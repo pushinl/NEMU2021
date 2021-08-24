@@ -49,17 +49,36 @@ static int cmd_info(char *args) {
 	char opt;
 	sscanf(args, " %c", &opt);
 	if(opt == 'r') {
-		printf("%%eax: 0x%x\n", cpu.eax);
-		printf("%%ecx: 0x%x\n", cpu.ecx);
-		printf("%%edx: 0x%x\n", cpu.edx);
-		printf("%%ebx: 0x%x\n", cpu.ebx);
-		printf("%%esp: 0x%x\n", cpu.esp);
-		printf("%%ebp: 0x%x\n", cpu.ebp);
-		printf("%%esi: 0x%x\n", cpu.esi);
-		printf("%%edi: 0x%x\n", cpu.edi);
+		printf("%%eax:    0x%x\n    %d", cpu.eax, cpu.eax);
+		printf("%%ecx:    0x%x\n    %d", cpu.ecx, cpu.ecx);
+		printf("%%edx:    0x%x\n    %d", cpu.edx, cpu.edx);
+		printf("%%ebx:    0x%x\n    %d", cpu.ebx, cpu.ebx);
+		printf("%%esp:    0x%x\n    %d", cpu.esp, cpu.esp);
+		printf("%%ebp:    0x%x\n    %d", cpu.ebp, cpu.ebp);
+		printf("%%esi:    0x%x\n    %d", cpu.esi, cpu.esi);
+		printf("%%edi:    0x%x\n    %d", cpu.edi, cpu.edi);
 	}
 	return 0;
 }
+
+static int cmd_x(char *args) {
+	if(args == NULL) return 0;
+	int n;
+	uint32_t ram_addr_start;
+	sscanf(args, " %d", &n);
+	sscanf(args, " 0x%x", &ram_addr_start);
+	int i, j;
+	for(i = 0; i < n; i++) {
+		uint32_t data = swaddr_read(ram_addr_start + i*4, 4);
+		printf("0x%x : ", ram_addr_start + i*4);
+		for(j = 0; j < 4; j++){
+			printf("0x%x ", data << j);
+		}
+		printf("\n");
+	}
+	return 0;
+}
+
 
 static struct {
 	char *name;
@@ -71,6 +90,7 @@ static struct {
 	{ "q", "Exit NEMU", cmd_q },
 	{ "si", "Excecute the program N steps", cmd_si },
 	{ "info", "Print the value of registers", cmd_info },
+	{ "x", "Scan the RAM", cmd_x },
 	/* TODO: Add more commands */
 
 };
