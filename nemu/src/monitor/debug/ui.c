@@ -67,9 +67,10 @@ static int cmd_x(char *args) {
 	uint32_t ram_addr_start;
 	sscanf(args, " %d %x", &n, &ram_addr_start);
 	//printf("%x", ram_addr_start);
-	int i;
+	int i, cnt = 0;
 	for(i = 0; i < n; i++) {
-		printf("0x%x: ", ram_addr_start);
+		cnt++;
+		if(cnt % 4 == 1) printf("0x%x: ", ram_addr_start);
 		/*
 		for(j = 0; j < 4; j++){
 			uint32_t data = swaddr_read(ram_addr_start++, 1);
@@ -78,7 +79,7 @@ static int cmd_x(char *args) {
 		uint32_t data = swaddr_read(ram_addr_start, 4);
 		printf("0x%08x ", data);
 		ram_addr_start += 4;
-		printf("\n");
+		if(cnt % 4 == 0) printf("\n");
 	}
 	return 0;
 }
