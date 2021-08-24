@@ -65,7 +65,7 @@ static int cmd_x(char *args) {
 	if(args == NULL) return 0;
 	int n;
 	uint32_t ram_addr_start;
-	sscanf(args, " %d %d", &n, &ram_addr_start);
+	sscanf(args, " %d 0x%d", &n, &ram_addr_start);
 	printf("%d 0x%d", n, ram_addr_start);
 	/*
 	int i, j;
