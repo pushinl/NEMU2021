@@ -73,7 +73,7 @@ static int cmd_x(char *args) {
 		printf("0x%x: ", ram_addr_start + i*4);
 		for(j = 0; j < 4; j++){
 			printf("0x%x ", data);
-			data = data >> 1;
+			data = data >> 8;
 		}
 		printf("\n");
 	}
