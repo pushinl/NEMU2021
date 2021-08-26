@@ -104,7 +104,7 @@ static bool make_token(char *e) {
 						strncpy(tokens[nr_token].str, e + position - substr_len, substr_len);
 						tokens[nr_token].str[substr_len] = '\0';
 					default :
-						/*if(rules[i].token_type == MINUS) {	//negative
+						if(rules[i].token_type == MINUS) {	//negative
 							if(nr_token == 0) tokens[++nr_token].type = NEG;
 							else if(PLUS <= tokens[nr_token - 1].type && tokens[nr_token - 1].type <= LB) {
 								tokens[++nr_token].type = NEG;
@@ -114,9 +114,9 @@ static bool make_token(char *e) {
 							else if(PLUS <= tokens[nr_token - 1].type && tokens[nr_token - 1].type <= LB) {
 								tokens[++nr_token].type = POINTER;
 							} else tokens[++nr_token].type = TIMES;
-						} else {*/
+						} else {
 							tokens[++nr_token].type = rules[i].token_type;
-						//}
+						}
 						break;
 				}
 
