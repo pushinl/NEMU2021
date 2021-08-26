@@ -13,7 +13,7 @@ enum {
 	TIMES,
 	DIV,
 	EQ, NOTEQ,
-	NOT,
+	AND, OR, NOT,
 	NEG, POINTER,
 	LB, RB,
 	HEX, DEC,
@@ -26,24 +26,27 @@ enum {
 static struct rule {
 	char *regex;
 	int token_type;
+	int priority;
 } rules[] = {
 
 	/* TODO: Add more rules.
 	 * Pay attention to the precedence level of different rules.
 	 */
 
-	{" +",	NOTYPE},				//spaces
-	{"\\+", PLUS},					//plus
-	{"-", MINUS},					//minus
-	{"\\*", TIMES},					//times
-	{"/", DIV},						//divide
-	{"==", EQ},						//equal
-	{"!=", NOTEQ},					//not eq
-	{"!", NOT},						//not
-	{"\\(", LB},					//lb
-	{"\\)", RB},					//rb
-	{"0[xX][0-9a-zA-Z]+", HEX},		//hex
-	{"[0-9]+", DEC},				//dec
+	{" +",	NOTYPE, 0},				//spaces
+	{"\\+", PLUS, 4},					//plus
+	{"-", MINUS, 4},					//minus
+	{"\\*", TIMES, 5},					//times
+	{"/", DIV, 5},						//divide
+	{"==", EQ, 3},						//equal
+	{"!=", NOTEQ, 3},					//not eq
+	{"&&", AND, 1},						//and
+	{"\\|\\|", OR, 2},					//or
+	{"!", NOT, 6},						//not
+	{"\\(", LB, 6},					//lb
+	{"\\)", RB, 6},					//rb
+	{"0[xX][0-9a-zA-Z]+", HEX, 0},		//hex
+	{"[0-9]+", DEC, 0},				//dec
 
 };
 
@@ -90,7 +93,7 @@ static bool make_token(char *e) {
 				char *substr_start = e + position;
 				int substr_len = pmatch.rm_eo;
 
-				Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
+				//Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
 				position += substr_len;
 
 				/* TODO: Now a new token is recognized with rules[i]. Add codes
@@ -132,6 +135,59 @@ static bool make_token(char *e) {
 
 	return true; 
 }
+
+bool check_parentheses(int l, int r, bool *success) {
+	*success = true;
+	if(l > r) return *success = false;
+	int cnt = 0, flag = 1, i; // flag : the LB and RB is matched or not
+	for(i = l; i <= r; i++) {
+		if(tokens[i].type == LB) cnt++;
+		if(tokens[i].type == RB) cnt--;
+		if(cnt < 0) return *success = false;
+		if(i != r && cnt == 0) flag = 0;
+	}
+	if(cnt != 0) return *success = false;
+	return flag;
+}
+
+uint32_t eval(int l, int r, bool *success) {
+	*success ;
+	if(l > r) return *success = false;
+	if(l == r) {
+		uint32_t tmp;
+		if(tokens[l].type == HEX) {
+			sscanf(tokens[l].str, "%x", &tmp);
+			return tmp;
+		}else if(tokens[l].type == DEC) {
+			sscanf(tokens[l].str, "%d", &tmp);
+			return tmp;
+		}else if(tokens[l].type == REG) {
+			const char *RE[] = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
+			int i;
+			for(i = 0; i < 8; i++)
+				if(strcmp(tokens[l].str, RE[i]) == 0)
+					return cpu.gpr[i]._32;
+			return *success = false;
+		}
+		bool flag = check_parentheses(l, r, success);
+		if(!success) {
+			printf("ERROR!!!");
+			return 0;
+		}
+		if(flag)
+			return eval(l + 1, r - 1, success);
+		int now = -1, i, cnt = 0;
+		for(i = l; i <= r; i++) {
+			if(tokens[i].type == LB) cnt++;
+			if(tokens[i].type == RB) cnt--;
+			if(cnt == 0) {
+				
+			}
+		}
+
+	}
+}
+
 
 uint32_t expr(char *e, bool *success) {
 	if(!make_token(e)) {
