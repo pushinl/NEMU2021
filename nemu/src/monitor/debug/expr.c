@@ -7,7 +7,17 @@
 #include <regex.h>
 
 enum {
-	NOTYPE = 256, EQ
+	NOTYPE = 0,
+	PLUS,
+	MINUS,
+	TIMES,
+	DIV,
+	EQ, NOTEQ,
+	NOT,
+	NEG, POINTER,
+	LB, RB,
+	HEX, DEC,
+	REG, 
 
 	/* TODO: Add more token types */
 
@@ -22,9 +32,19 @@ static struct rule {
 	 * Pay attention to the precedence level of different rules.
 	 */
 
-	{" +",	NOTYPE},				// spaces
-	{"\\+", '+'},					// plus
-	{"==", EQ}						// equal
+	{" +",	NOTYPE},				//spaces
+	{"\\+", PLUS},					//plus
+	{"-", MINUS},					//minus
+	{"\\*", TIMES},					//times
+	{"/", DIV},						//divide
+	{"==", EQ},						//equal
+	{"!=", NOTEQ},					//not eq
+	{"!", NOT},						//not
+	{"\\(", LB},					//lb
+	{"\\)", RB},					//rb
+	{"0[xX][0-9a-zA-Z]+", HEX},		//hex
+	{"[0-9]+", DEC},				//dec
+
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
@@ -79,7 +99,25 @@ static bool make_token(char *e) {
 				 */
 
 				switch(rules[i].token_type) {
-					default: panic("please implement me");
+					case NOTYPE : break;
+					case HEX : case DEC : case REG :
+						strncpy(tokens[nr_token].str, e + position - substr_len, substr_len);
+						tokens[nr_token].str[substr_len] = '\0';
+					default :
+						/*if(rules[i].token_type == MINUS) {	//negative
+							if(nr_token == 0) tokens[++nr_token].type = NEG;
+							else if(PLUS <= tokens[nr_token - 1].type && tokens[nr_token - 1].type <= LB) {
+								tokens[++nr_token].type = NEG;
+							} else tokens[++nr_token].type = MINUS;
+						} else if(rules[i].token_type == TIMES) { //pointer
+							if(nr_token == 0) tokens[++nr_token].type = POINTER;
+							else if(PLUS <= tokens[nr_token - 1].type && tokens[nr_token - 1].type <= LB) {
+								tokens[++nr_token].type = POINTER;
+							} else tokens[++nr_token].type = TIMES;
+						} else {*/
+							tokens[++nr_token].type = rules[i].token_type;
+						//}
+						break;
 				}
 
 				break;
@@ -102,7 +140,7 @@ uint32_t expr(char *e, bool *success) {
 	}
 
 	/* TODO: Insert codes to evaluate the expression. */
-	panic("please implement me");
+	//panic("please implement me");
 	return 0;
 }
 
