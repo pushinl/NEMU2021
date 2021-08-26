@@ -84,6 +84,12 @@ static int cmd_x(char *args) {
 	return 0;
 }
 
+static int cmd_p(char *args){
+	if(args == NULL) return 0;
+	bool success = true;
+	printf("%x", expr(args, &success));
+	return 0;
+}
 
 static struct {
 	char *name;
@@ -96,6 +102,7 @@ static struct {
 	{ "si", "Excecute the program N steps", cmd_si },
 	{ "info", "Print the value of registers", cmd_info },
 	{ "x", "Scan the RAM", cmd_x },
+	{ "p", "Expression evaluation", cmd_p }
 	/* TODO: Add more commands */
 
 };
