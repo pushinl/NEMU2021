@@ -109,20 +109,22 @@ static bool make_token(char *e) {
 						strncpy(tokens[nr_token+1].str, e + position - substr_len, substr_len);
 						tokens[nr_token+1].str[substr_len] = '\0';
 					default :
+						tokens[++nr_token].priority = rules[i].priority;
 						if(rules[i].token_type == MINUS) {	//negative
-							if(nr_token == 0) tokens[++nr_token].type = NEG;
-							else if(PLUS <= tokens[nr_token].type && tokens[nr_token].type <= LB) {
-								tokens[++nr_token].type = NEG;
-							} else tokens[++nr_token].type = MINUS;
+							if(nr_token == 1) tokens[nr_token].type = NEG;
+							else if(PLUS <= tokens[nr_token-1].type && tokens[nr_token-1].type <= LB) {
+								tokens[nr_token].type = NEG;
+								tokens[nr_token].priority = 7;
+							} else tokens[nr_token].type = MINUS;
 						} else if(rules[i].token_type == TIMES) { //pointer
-							if(nr_token == 0) tokens[++nr_token].type = POINTER;
-							else if(PLUS <= tokens[nr_token].type && tokens[nr_token].type <= LB) {
-								tokens[++nr_token].type = POINTER;
-							} else tokens[++nr_token].type = TIMES;
+							if(nr_token == 1) tokens[nr_token].type = POINTER;
+							else if(PLUS <= tokens[nr_token-1].type && tokens[nr_token-1].type <= LB) {
+								tokens[nr_token].type = POINTER;
+								tokens[nr_token].priority = 7;
+							} else tokens[nr_token].type = TIMES;
 						} else {
-							tokens[++nr_token].type = rules[i].token_type;
+							tokens[nr_token].type = rules[i].token_type;
 						}
-						tokens[nr_token].priority = rules[i].priority;
 						Log("priority: %d || match tokens[%d] = \"%s\" at position %d", tokens[nr_token].priority, nr_token, tokens[nr_token].str, position);
 						break;
 				}
