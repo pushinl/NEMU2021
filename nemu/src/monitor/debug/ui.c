@@ -116,7 +116,7 @@ static int cmd_w(char *args){
 		printf("Expression Error!\n");
 		return 0;
 	}
-	printf("Value : %x\n", wp->val);
+	printf("Value : 0x%x\n", wp->val);
 	return 0;
 }
 

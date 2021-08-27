@@ -37,7 +37,29 @@ WP* new_wp() {
 }
 
 void free_wp(WP *wp) {
-	
+	WP *p;
+	p = free_;
+	if(p == NULL) {
+		free_ = wp;
+		p = free_;
+	} else {
+		while(p->next != NULL) p = p->next;
+		p->next = wp;
+		printf("WatchPoint %d id released.\n", wp->NO);
+	}
+	if(head == NULL)
+		panic("Error: WatchPoint pool is empty.\n");
+	if(head->NO == wp->NO) {
+		head = head->next;
+	} else {
+		p = head;
+		while(p->next != NULL && p->NO != wp->NO) p = p->next;
+		if(p->next == NULL && p->NO == wp->NO) head = NULL;
+		else if(p->next->NO == wp->NO) p->next = p->next->next;
+		else panic("error free\n");
+	}
+	wp->next = NULL;
+	wp->val = 0;
 }
 
 void delete_wp(int num) {
