@@ -180,7 +180,7 @@ uint32_t eval(int l, int r, bool *success) {
 	}
 
 	bool flag = check_parentheses(l, r, success);
-	if(!success) {
+	if(!*success) {
 		printf("ERROR!!!");
 		return 0;
 	}
@@ -196,6 +196,20 @@ uint32_t eval(int l, int r, bool *success) {
 		}
 	}
 	assert(cnt == 0);
+	if (l == nxt || tokens[nxt].type == POINTER || tokens[nxt].type == NEG || tokens[nxt].type == NOT) {
+		uint32_t val = eval(l + 1, r, success);
+		switch (tokens[l].type) {
+			case POINTER:
+				return swaddr_read(val, 4);
+			case NEG:
+				return -val;
+			case NOT:
+				return !val;
+			default :
+				break;
+		}
+		panic("error 1");
+	}
 	uint32_t a = eval(l, nxt - 1, success);
 	uint32_t b = eval(nxt + 1, r, success);
 	switch (tokens[nxt].type) {
@@ -223,8 +237,8 @@ uint32_t eval(int l, int r, bool *success) {
 		case OR:
 			return a || b;
 			break;
-		
 	}
+	panic("error 2");
 	return 0;
 }
 
