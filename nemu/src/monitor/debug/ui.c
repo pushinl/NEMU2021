@@ -107,7 +107,7 @@ static int cmd_p(char *args){
 static int cmd_w(char *args){
 	if(args == NULL) return 0;
 	WP *wp;
-	bool success;
+	bool success = true;
 	wp = new_wp();
 	strcpy(wp->expr, args);
 	printf("WatchPoint %d : %s is set.\n", wp->NO, wp->expr);
