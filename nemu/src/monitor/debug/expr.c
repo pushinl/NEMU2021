@@ -122,7 +122,7 @@ static bool make_token(char *e) {
 						} else {
 							tokens[++nr_token].type = rules[i].token_type;
 						}
-						tokens[nr_token].type = rules[i].priority;
+						tokens[nr_token].priority = rules[i].priority;
 						Log("priority: %d || match tokens[%d] = \"%s\" at position %d", tokens[nr_token].priority, nr_token, tokens[nr_token].str, position);
 						break;
 				}
@@ -155,6 +155,7 @@ bool check_parentheses(int l, int r, bool *success) {
 }
 
 uint32_t eval(int l, int r, bool *success) {
+
 	if(l > r) return *success = false;
 	if(l == r) {
 		uint32_t tmp;
