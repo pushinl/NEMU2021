@@ -64,8 +64,11 @@ static int cmd_info(char *args) {
 static int cmd_x(char *args) {
 	if(args == NULL) return 0;
 	int n;
+	bool success = true;
+	char *EXPR = "";
 	uint32_t ram_addr_start;
-	sscanf(args, " %d %x", &n, &ram_addr_start);
+	sscanf(args, " %d %s", &n, EXPR);
+	ram_addr_start = expr(EXPR, &success);
 	//printf("%x", ram_addr_start);
 	int i, cnt = 0;
 	for(i = 0; i < n; i++) {
