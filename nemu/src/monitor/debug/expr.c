@@ -33,20 +33,21 @@ static struct rule {
 	 * Pay attention to the precedence level of different rules.
 	 */
 
-	{" +",	NOTYPE, 0},				//spaces
-	{"\\+", PLUS, 4},					//plus
-	{"-", MINUS, 4},					//minus
-	{"\\*", TIMES, 5},					//times
-	{"/", DIV, 5},						//divide
-	{"==", EQ, 3},						//equal
-	{"!=", NOTEQ, 3},					//not eq
-	{"&&", AND, 1},						//and
-	{"\\|\\|", OR, 2},					//or
-	{"!", NOT, 6},						//not
-	{"\\(", LB, 6},					//lb
-	{"\\)", RB, 6},					//rb
-	{"0[xX][0-9a-zA-Z]+", HEX, 0},		//hex
-	{"[0-9]+", DEC, 0},				//dec
+	{" +",	NOTYPE, 0},
+	{"\\+", PLUS, 4},
+	{"-", MINUS, 4},
+	{"\\*", TIMES, 5},
+	{"/", DIV, 5},
+	{"==", EQ, 3},
+	{"!=", NOTEQ, 3},
+	{"&&", AND, 1},
+	{"\\|\\|", OR, 2},
+	{"!", NOT, 6},
+	{"\\(", LB, 6},
+	{"\\)", RB, 6},
+	{"0[xX][0-9a-zA-Z]+", HEX, 0},
+	{"[0-9]+", DEC, 0},
+	{"\\$[a-zA-Z]+", REG, 0}
 
 };
 
@@ -74,6 +75,7 @@ void init_regex() {
 typedef struct token {
 	int type;
 	char str[32];
+	int priority;
 } Token;
 
 Token tokens[32];
@@ -90,7 +92,7 @@ static bool make_token(char *e) {
 		/* Try all rules one by one. */
 		for(i = 0; i < NR_REGEX; i ++) {
 			if(regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
-				char *substr_start = e + position;
+				//char *substr_start = e + position;
 				int substr_len = pmatch.rm_eo;
 
 				//Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
@@ -109,17 +111,19 @@ static bool make_token(char *e) {
 					default :
 						if(rules[i].token_type == MINUS) {	//negative
 							if(nr_token == 0) tokens[++nr_token].type = NEG;
-							else if(PLUS <= tokens[nr_token - 1].type && tokens[nr_token - 1].type <= LB) {
+							else if(PLUS <= tokens[nr_token].type && tokens[nr_token].type <= LB) {
 								tokens[++nr_token].type = NEG;
 							} else tokens[++nr_token].type = MINUS;
 						} else if(rules[i].token_type == TIMES) { //pointer
 							if(nr_token == 0) tokens[++nr_token].type = POINTER;
-							else if(PLUS <= tokens[nr_token - 1].type && tokens[nr_token - 1].type <= LB) {
+							else if(PLUS <= tokens[nr_token].type && tokens[nr_token].type <= LB) {
 								tokens[++nr_token].type = POINTER;
 							} else tokens[++nr_token].type = TIMES;
 						} else {
 							tokens[++nr_token].type = rules[i].token_type;
 						}
+						tokens[nr_token].type = rules[i].priority;
+						Log("priority: %d || match tokens[%d] = \"%s\" at position %d", tokens[nr_token].priority, nr_token, tokens[nr_token].str, position);
 						break;
 				}
 
@@ -151,7 +155,6 @@ bool check_parentheses(int l, int r, bool *success) {
 }
 
 uint32_t eval(int l, int r, bool *success) {
-	*success ;
 	if(l > r) return *success = false;
 	if(l == r) {
 		uint32_t tmp;
@@ -162,30 +165,64 @@ uint32_t eval(int l, int r, bool *success) {
 			sscanf(tokens[l].str, "%d", &tmp);
 			return tmp;
 		}else if(tokens[l].type == REG) {
-			const char *RE[] = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
+			const char *RE[] = {"$eax", "$ecx", "$edx", "$ebx", "$esp", "$ebp", "$esi", "$edi"};
+			const char *REB[] = {"$EAX", "$ECX", "$EDX", "$EBX", "$ESP", "$EBP", "$ESI", "$EDI"};
 			int i;
+			if(strcmp(tokens[l].str, "$eip") == 0 || strcmp(tokens[l].str, "$EIP") == 0) return cpu.eip;
 			for(i = 0; i < 8; i++)
-				if(strcmp(tokens[l].str, RE[i]) == 0)
+				if(strcmp(tokens[l].str, RE[i]) == 0 || strcmp(tokens[l].str, REB[i]) == 0)
 					return cpu.gpr[i]._32;
 			return *success = false;
 		}
-		bool flag = check_parentheses(l, r, success);
-		if(!success) {
-			printf("ERROR!!!");
-			return 0;
-		}
-		if(flag)
-			return eval(l + 1, r - 1, success);
-		int now = -1, i, cnt = 0;
-		for(i = l; i <= r; i++) {
-			if(tokens[i].type == LB) cnt++;
-			if(tokens[i].type == RB) cnt--;
-			if(cnt == 0) {
-				
-			}
-		}
-
 	}
+
+	bool flag = check_parentheses(l, r, success);
+	if(!success) {
+		printf("ERROR!!!");
+		return 0;
+	}
+	if(flag)
+		return eval(l + 1, r - 1, success);
+	int nxt = 10, i, cnt = 0;
+	for(i = l; i <= r; i++) {
+		if(tokens[i].type == LB) cnt++;
+		if(tokens[i].type == RB) cnt--;
+		if(cnt == 0) {
+			if(tokens[i].type >= PLUS && tokens[i].type <= NOT && tokens[i].priority < nxt)
+				nxt = i;
+		}
+	}
+	assert(cnt == 0);
+	uint32_t a = eval(l, nxt - 1, success);
+	uint32_t b = eval(nxt + 1, r, success);
+	switch (tokens[nxt].type) {
+		case PLUS:
+			return a + b;
+			break;
+		case MINUS:
+			return a - b;
+			break;
+		case TIMES:
+			return a * b;
+			break;
+		case DIV:
+			return a / b;
+			break;
+		case EQ:
+			return a == b;
+			break;
+		case NOTEQ:
+			return a != b;
+			break;
+		case AND:
+			return a && b;
+			break;
+		case OR:
+			return a || b;
+			break;
+		
+	}
+	return 0;
 }
 
 
@@ -197,6 +234,6 @@ uint32_t expr(char *e, bool *success) {
 
 	/* TODO: Insert codes to evaluate the expression. */
 	//panic("please implement me");
-	return 0;
+	return expr(e, success);
 }
 
