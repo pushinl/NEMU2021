@@ -123,7 +123,7 @@ static bool make_token(char *e) {
 							tokens[++nr_token].type = rules[i].token_type;
 						}
 						tokens[nr_token].type = rules[i].priority;
-						//Log("priority: %d || match tokens[%d] = \"%s\" at position %d", tokens[nr_token].priority, nr_token, tokens[nr_token].str, position);
+						Log("priority: %d || match tokens[%d] = \"%s\" at position %d", tokens[nr_token].priority, nr_token, tokens[nr_token].str, position);
 						break;
 				}
 
@@ -234,6 +234,6 @@ uint32_t expr(char *e, bool *success) {
 
 	/* TODO: Insert codes to evaluate the expression. */
 	//panic("please implement me");
-	return expr(e, success);
+	return eval(1, nr_token, success);
 }
 
