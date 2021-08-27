@@ -106,8 +106,8 @@ static bool make_token(char *e) {
 				switch(rules[i].token_type) {
 					case NOTYPE : break;
 					case HEX : case DEC : case REG :
-						strncpy(tokens[nr_token].str, e + position - substr_len, substr_len);
-						tokens[nr_token].str[substr_len] = '\0';
+						strncpy(tokens[nr_token+1].str, e + position - substr_len, substr_len);
+						tokens[nr_token+1].str[substr_len] = '\0';
 					default :
 						if(rules[i].token_type == MINUS) {	//negative
 							if(nr_token == 0) tokens[++nr_token].type = NEG;
