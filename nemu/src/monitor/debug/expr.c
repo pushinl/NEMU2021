@@ -180,10 +180,7 @@ uint32_t eval(int l, int r, bool *success) {
 	}
 
 	bool flag = check_parentheses(l, r, success);
-	if(!*success) {
-		printf("ERROR!!!");
-		return 0;
-	}
+	if(!*success) 	return 0;
 	if(flag)
 		return eval(l + 1, r - 1, success);
 	int nxt = 10, i, cnt = 0;

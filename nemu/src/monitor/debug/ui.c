@@ -71,6 +71,7 @@ static int cmd_x(char *args) {
 	ram_addr_start = expr(args, &success);
 	if(!success) {
 		printf("Expression Error!\n");
+		return 0;
 	}
 	//printf("%x", ram_addr_start);
 	int i, cnt = 0;
@@ -103,6 +104,22 @@ static int cmd_p(char *args){
 	return 0;
 }
 
+static int cmd_w(char *args){
+	if(args == NULL) return 0;
+	WP *wp;
+	bool success;
+	wp = new_wp();
+	strcpy(wp->expr, args);
+	printf("WatchPoint %d : %s is set.\n", wp->NO, wp->expr);
+	wp->val = expr(wp->expr, &success);
+	if(!success) {
+		printf("Expression Error!\n");
+		return 0;
+	}
+	printf("Value : %x\n", wp->val);
+	return 0;
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -114,7 +131,8 @@ static struct {
 	{ "si", "Excecute the program N steps", cmd_si },
 	{ "info", "Print the value of registers", cmd_info },
 	{ "x", "Scan the RAM", cmd_x },
-	{ "p", "Expression evaluation", cmd_p }
+	{ "p", "Expression evaluation", cmd_p },
+	{ "w", "Add a WatchPoint", cmd_w },
 	/* TODO: Add more commands */
 
 };
