@@ -87,7 +87,7 @@ static int cmd_x(char *args) {
 static int cmd_p(char *args){
 	if(args == NULL) return 0;
 	bool success = true;
-	printf("%u", expr(args, &success));
+	printf("%x", expr(args, &success));
 	return 0;
 }
 
