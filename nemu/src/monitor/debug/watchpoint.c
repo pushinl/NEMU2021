@@ -85,7 +85,7 @@ void info_wp() {
 bool check_wp() {
 	WP *wp;
 	wp = head;
-	bool success, flag = false;
+	bool success = true, flag = false;
 	while(wp != NULL) {
 		uint32_t tmp_val = expr(wp->expr, &success);
 		if(!success) 
