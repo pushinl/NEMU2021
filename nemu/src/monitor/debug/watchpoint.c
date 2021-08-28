@@ -64,6 +64,7 @@ void free_wp(WP *wp) {
 
 void delete_wp(int num) {
 	WP *wp;
+	if(num >= 32 || num < 0) panic("Error WatchPoint!\n");
 	wp = &wp_pool[num];
 	free_wp(wp);
 }
