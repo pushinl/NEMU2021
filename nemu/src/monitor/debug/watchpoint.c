@@ -93,8 +93,8 @@ bool check_wp() {
 		if(tmp_val != wp->val) {
 			flag = true;
 			printf("Hint watchpoint %d at address 0x%08x\n", wp->NO, cpu.eip);
-			printf("Old value: 0x%x\n", wp->val);
-			printf("New value: 0x%x\n", tmp_val);
+			printf("Old value: 0x%08x\n", wp->val);
+			printf("New value: 0x%08x\n", tmp_val);
 		}
 		wp = wp->next;
 	}
