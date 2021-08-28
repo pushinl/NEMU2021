@@ -1,5 +1,6 @@
 #include "monitor/watchpoint.h"
 #include "monitor/expr.h"
+#include "nemu.h"
 
 #define NR_WP 32
 
@@ -81,3 +82,21 @@ void info_wp() {
 	}
 }
 
+bool check_wp() {
+	WP *wp;
+	wp = head;
+	bool success, flag = false;
+	while(wp != NULL) {
+		uint32_t tmp_val = expr(wp->expr, &success);
+		if(!success) 
+			panic("Expression failed!(watchpoint)\n");
+		if(tmp_val != wp->val) {
+			flag = true;
+			printf("Hint watchpoint %d at address 0x%08x\n", wp->NO, cpu.eip);
+			printf("Old value: 0x%x\n", wp->val);
+			printf("New value: 0x%x\n", tmp_val);
+		}
+		wp = wp->next;
+	}
+	return flag;
+}
