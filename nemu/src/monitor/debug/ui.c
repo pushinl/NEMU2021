@@ -57,6 +57,8 @@ static int cmd_info(char *args) {
 		printf("%%ebp:    0x%x    %d\n", cpu.ebp, cpu.ebp);
 		printf("%%esi:    0x%x    %d\n", cpu.esi, cpu.esi);
 		printf("%%edi:    0x%x    %d\n", cpu.edi, cpu.edi);
+	} else if(opt == 'w') {
+		info_wp();
 	}
 	return 0;
 }
@@ -140,7 +142,7 @@ static struct {
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
 	{ "si", "Excecute the program N steps", cmd_si },
-	{ "info", "Print the value of registers", cmd_info },
+	{ "info", "r - Print the value of registers/ w - Print the WatchPoint", cmd_info },
 	{ "x", "Scan the RAM", cmd_x },
 	{ "p", "Expression evaluation", cmd_p },
 	{ "w", "Add a WatchPoint", cmd_w },
