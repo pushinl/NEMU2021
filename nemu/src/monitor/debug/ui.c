@@ -110,14 +110,16 @@ static int cmd_w(char *args){
 	if(args == NULL) return 0;
 	WP *wp;
 	bool success = true;
-	wp = new_wp();
-	strcpy(wp->expr, args);
-	printf("WatchPoint %d : %s is set.\n", wp->NO, wp->expr);
-	wp->val = expr(wp->expr, &success);
+	uint32_t value;
+	value = expr(args, &success);
 	if(!success) {
 		printf("Expression Error!\n");
 		return 0;
 	}
+	wp = new_wp();
+	strcpy(wp->expr, args);
+	wp->val = value;
+	printf("WatchPoint %d : %s is set.\n", wp->NO, wp->expr);
 	printf("Value : 0x%x\n", wp->val);
 	return 0;
 }
