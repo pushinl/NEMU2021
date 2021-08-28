@@ -120,6 +120,17 @@ static int cmd_w(char *args){
 	return 0;
 }
 
+static int cmd_d(char *args) {
+	int num;
+	if (args==NULL) {
+		printf("Need more arguments, please inset an integer to appoint the WatchPoint.\n");
+	} else {
+		num = atoi(args);
+		delete_wp(num);
+	}
+	return 0;
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -133,6 +144,7 @@ static struct {
 	{ "x", "Scan the RAM", cmd_x },
 	{ "p", "Expression evaluation", cmd_p },
 	{ "w", "Add a WatchPoint", cmd_w },
+	{ "d", "Delete a WatchPoint", cmd_d},
 	/* TODO: Add more commands */
 
 };
