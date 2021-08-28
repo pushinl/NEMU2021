@@ -45,7 +45,6 @@ void free_wp(WP *wp) {
 	} else {
 		while(p->next != NULL) p = p->next;
 		p->next = wp;
-		printf("WatchPoint %d id released.\n", wp->NO);
 	}
 	if(head == NULL)
 		panic("Error: WatchPoint pool is empty.\n");
@@ -60,6 +59,7 @@ void free_wp(WP *wp) {
 	}
 	wp->next = NULL;
 	wp->val = 0;
+	printf("WatchPoint %d id released.\n", wp->NO);
 }
 
 void delete_wp(int num) {
