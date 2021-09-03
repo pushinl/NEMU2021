@@ -193,7 +193,7 @@ uint32_t eval(int l, int r, bool *success) {
 		}
 	}
 	assert(cnt == 0);
-	Log("%d\n", nxt);
+	Log("%d  %d", nxt, tokens[nxt].priority);
 	if (l == nxt || tokens[nxt].type == POINTER || tokens[nxt].type == NEG || tokens[nxt].type == NOT) {
 		uint32_t val = eval(l + 1, r, success);
 		switch (tokens[l].type) {
