@@ -186,13 +186,13 @@ uint32_t eval(int l, int r, bool *success) {
 	if(!*success) 	return 0;
 	if(flag)
 		return eval(l + 1, r - 1, success);
-	int nxt = 10, i, cnt = 0;
+	int nxtPro = 10, i, cnt = 0, nxt = l;
 	for(i = l; i <= r; i++) {
 		if(tokens[i].type == LB) cnt++;
 		if(tokens[i].type == RB) cnt--;
 		if(cnt == 0) {
-			if(tokens[i].type >= PLUS && tokens[i].type < LB && tokens[i].priority <= tokens[nxt].priority)
-				nxt = i;
+			if(tokens[i].type >= PLUS && tokens[i].type < LB && tokens[i].priority <= nxtPro)
+				nxt = i, nxtPro = tokens[i].priority;
 		}
 	}
 	Log("%d %d", nxt, tokens[nxt].priority);
