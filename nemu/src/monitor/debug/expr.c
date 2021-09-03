@@ -191,8 +191,8 @@ uint32_t eval(int l, int r, bool *success) {
 		if(tokens[i].type == LB) cnt++;
 		if(tokens[i].type == RB) cnt--;
 		if(cnt == 0) {
-			if(tokens[i].type >= PLUS && tokens[i].type < LB && tokens[i].priority <= nxt)
-				nxt = i, printf("%d", i);
+			if(tokens[i].type >= PLUS && tokens[i].type < LB && tokens[i].priority <= tokens[nxt].priority)
+				nxt = i;
 		}
 	}
 	Log("%d %d", nxt, tokens[nxt].priority);
