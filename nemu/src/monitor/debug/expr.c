@@ -183,7 +183,7 @@ uint32_t eval(int l, int r, bool *success) {
 	if(!*success) 	return 0;
 	if(flag)
 		return eval(l + 1, r - 1, success);
-	int nxt = 10, i, cnt = 0;
+	int nxt = l, i, cnt = 0;
 	for(i = l; i <= r; i++) {
 		if(tokens[i].type == LB) cnt++;
 		if(tokens[i].type == RB) cnt--;
