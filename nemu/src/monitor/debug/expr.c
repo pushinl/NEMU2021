@@ -125,7 +125,7 @@ static bool make_token(char *e) {
 						} else {
 							tokens[nr_token].type = rules[i].token_type;
 						}
-						Log("priority: %d || match tokens[%d] = \"%s\" at position %d", tokens[nr_token].priority, nr_token, tokens[nr_token].str, position);
+						//Log("priority: %d || match tokens[%d] = \"%s\" at position %d", tokens[nr_token].priority, nr_token, tokens[nr_token].str, position);
 						break;
 				}
 
@@ -183,7 +183,7 @@ uint32_t eval(int l, int r, bool *success) {
 	if(!*success) 	return 0;
 	if(flag)
 		return eval(l + 1, r - 1, success);
-	int nxt = l, i, cnt = 0;
+	int nxt = 10, i, cnt = 0;
 	for(i = l; i <= r; i++) {
 		if(tokens[i].type == LB) cnt++;
 		if(tokens[i].type == RB) cnt--;
@@ -236,6 +236,7 @@ uint32_t eval(int l, int r, bool *success) {
 			break;
 	}
 	panic("error 2");
+	Log("%d\n", nxt);
 	return 0;
 }
 
