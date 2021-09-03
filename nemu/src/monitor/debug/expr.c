@@ -145,15 +145,18 @@ static bool make_token(char *e) {
 bool check_parentheses(int l, int r, bool *success) {
 	*success = true;
 	if(l > r) return *success = false;
-	int cnt = 0, flag = 1, i; // flag : the LB and RB is matched or not
-	for(i = l; i <= r; i++) {
-		if(tokens[i].type == LB) cnt++;
-		if(tokens[i].type == RB) cnt--;
-		if(cnt < 0) return *success = false;
-		if(i != r && cnt == 0) flag = 0;
+	if(tokens[l].type == LB && tokens[r].type == RB) {
+		int cnt = 0, flag = 1, i; // flag : the LB and RB is matched or not
+		for(i = l; i <= r; i++) {
+			if(tokens[i].type == LB) cnt++;
+			if(tokens[i].type == RB) cnt--;
+			if(cnt < 0) return *success = false;
+			if(i != r && cnt == 0) flag = 0;
+		}
+		if(cnt != 0) return *success = false;
+		return flag;
 	}
-	if(cnt != 0) return *success = false;
-	return flag;
+	return false;
 }
 
 uint32_t eval(int l, int r, bool *success) {
