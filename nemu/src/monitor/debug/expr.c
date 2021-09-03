@@ -195,7 +195,7 @@ uint32_t eval(int l, int r, bool *success) {
 				nxt = i;
 		}
 	}
-	Log("%d", nxt);
+	Log("%d %d", nxt, tokens[nxt].priority);
 	assert(cnt == 0);
 	if (l == nxt || tokens[nxt].type == POINTER || tokens[nxt].type == NEG || tokens[nxt].type == NOT) {
 		uint32_t val = eval(l + 1, r, success);
