@@ -43,8 +43,8 @@ static struct rule {
 	{"&&", AND, 1},
 	{"\\|\\|", OR, 2},
 	{"!", NOT, 6},
-	{"\\(", LB, 6},
-	{"\\)", RB, 6},
+	{"\\(", LB, 7},
+	{"\\)", RB, 7},
 	{"0[xX][0-9a-zA-Z]+", HEX, 0},
 	{"[0-9]+", DEC, 0},
 	{"\\$[a-zA-Z]+", REG, 0}
@@ -114,13 +114,13 @@ static bool make_token(char *e) {
 							if(nr_token == 1) tokens[nr_token].type = NEG;
 							else if(PLUS <= tokens[nr_token-1].type && tokens[nr_token-1].type <= LB) {
 								tokens[nr_token].type = NEG;
-								tokens[nr_token].priority = 7;
+								tokens[nr_token].priority = 6;
 							} else tokens[nr_token].type = MINUS;
 						} else if(rules[i].token_type == TIMES) { //pointer
 							if(nr_token == 1) tokens[nr_token].type = POINTER;
 							else if(PLUS <= tokens[nr_token-1].type && tokens[nr_token-1].type <= LB) {
 								tokens[nr_token].type = POINTER;
-								tokens[nr_token].priority = 7;
+								tokens[nr_token].priority = 6;
 							} else tokens[nr_token].type = TIMES;
 						} else {
 							tokens[nr_token].type = rules[i].token_type;
@@ -196,7 +196,6 @@ uint32_t eval(int l, int r, bool *success) {
 		}
 	}
 	assert(cnt == 0);
-	Log("%d  %d", nxt, tokens[nxt].priority);
 	if (l == nxt || tokens[nxt].type == POINTER || tokens[nxt].type == NEG || tokens[nxt].type == NOT) {
 		uint32_t val = eval(l + 1, r, success);
 		switch (tokens[l].type) {
