@@ -74,13 +74,13 @@ make_group(group3_v,
 
 /* 0xfe */
 make_group(group4,
-	inv, inv, inv, inv, 
+	inc_rm_b, dec_rm_b, inv, inv, 
 	inv, inv, inv, inv)
 
 /* 0xff */
 make_group(group5,
-	inv, dec_rm_v, inv, inv, 
-	jmp_rm_l, inv, inv, inv)
+	inc_rm_v, dec_rm_v, call_rm_v, inv, 
+	inv, inv, push_rm_v, inv)
 
 make_group(group6,
 	inv, inv, inv, inv, 
