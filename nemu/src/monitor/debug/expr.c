@@ -5,6 +5,9 @@
  */
 #include <sys/types.h>
 #include <regex.h>
+#include <stdlib.h>
+
+uint32_t look_up_symtab(char *, bool *);
 
 enum {
 	NOTYPE = 0,
@@ -15,9 +18,10 @@ enum {
 	EQ, NOTEQ,
 	AND, OR, NOT,
 	NEG, POINTER,
+	VAR,
 	LB, RB,
 	HEX, DEC,
-	REG, 
+	REG,
 
 	/* TODO: Add more token types */
 
@@ -47,7 +51,8 @@ static struct rule {
 	{"\\)", RB, 7},
 	{"0[xX][0-9a-zA-Z]+", HEX, 0},
 	{"[0-9]+", DEC, 0},
-	{"\\$[a-zA-Z]+", REG, 0}
+	{"\\$[a-zA-Z]+", REG, 0},
+	{"[a-zA-Z_]{1,31}", VAR, 0}
 
 };
 
@@ -105,7 +110,7 @@ static bool make_token(char *e) {
 
 				switch(rules[i].token_type) {
 					case NOTYPE : break;
-					case HEX : case DEC : case REG :
+					case HEX : case DEC : case REG : case VAR :
 						strncpy(tokens[nr_token+1].str, e + position - substr_len, substr_len);
 						tokens[nr_token+1].str[substr_len] = '\0';
 					default :
@@ -179,6 +184,11 @@ uint32_t eval(int l, int r, bool *success) {
 				if(strcmp(tokens[l].str, RE[i]) == 0 || strcmp(tokens[l].str, REB[i]) == 0)
 					return cpu.gpr[i]._32;
 			return *success = false;
+		}else if(tokens[l].type == VAR) {
+			uint32_t val;
+			val = look_up_symtab(tokens[l].str, success);
+			if(!*success) return 0;
+			return val;
 		}
 	}
 
