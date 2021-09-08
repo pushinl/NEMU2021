@@ -18,10 +18,9 @@ enum {
 	EQ, NOTEQ,
 	AND, OR, NOT,
 	NEG, POINTER,
-	VAR,
 	LB, RB,
 	HEX, DEC,
-	REG,
+	REG, VAR,
 
 	/* TODO: Add more token types */
 

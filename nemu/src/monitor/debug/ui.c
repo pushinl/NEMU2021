@@ -103,7 +103,7 @@ static int cmd_p(char *args){
 		printf("Expression Error!\n");
 		return 0;
 	}
-	printf("0x%x\n", EXPR);
+	printf("0x08%x\n", EXPR);
 	return 0;
 }
 
