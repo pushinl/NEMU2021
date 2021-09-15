@@ -2,5 +2,6 @@
 #define __ADC_H__
 
 make_helper(adc_r2rm_v);
+make_helper(adc_r2rm_b);
 
 #endif
