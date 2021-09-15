@@ -64,7 +64,7 @@ static void init_ramdisk() {
 }
 #endif
 
-void load_entry() {
+static void load_entry() {
 	int ret;
 	FILE *fp = fopen("entry", "rb");
 	Assert(fp, "Can not open 'entry'");
