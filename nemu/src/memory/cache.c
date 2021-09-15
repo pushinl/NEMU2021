@@ -12,13 +12,15 @@ void init_cache(){
 		cache[i].tag = 0;
 		//memset(cache[i].data,0,BLOCK_SIZE);
 	}
-    
+
 	for (i = 0;i < STO_SIZE_L2/BLOCK_SIZE;i ++){
 		cache2[i].valid = 0;
 		cache2[i].dirty = 0;
 		cache2[i].tag = 0;
 		//memset (cache2[i].data,0,BLOCK_SIZE);
 	}
+
+    printf("qwq\n");
 
 }
 
