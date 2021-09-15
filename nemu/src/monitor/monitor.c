@@ -1,5 +1,4 @@
 #include "nemu.h"
-#include "memory/cache.h"
 
 #define ENTRY_START 0x100000
 
@@ -23,10 +22,7 @@ static void welcome() {
 	printf("Welcome to NEMU!\nThe executable is %s.\nFor help, type \"help\"\n",
 			exec_file);
 }
-static void init_cr0() {
-	cpu.cr0.protect_enable = 0;
-	cpu.cr0.paging = 0;
-}
+
 void init_monitor(int argc, char *argv[]) {
 	/* Perform some global initialization */
 
@@ -90,13 +86,7 @@ void restart() {
 
 	/* Set the initial instruction pointer. */
 	cpu.eip = ENTRY_START;
-	cpu.eflags.val = 0x2;
 
-	init_cr0();
-	//init_seg();
-	//init_tlb();
-	/* Initialize Cache*/
-	init_cache();
 	/* Initialize DRAM. */
 	init_ddr3();
 }
