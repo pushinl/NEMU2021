@@ -26,7 +26,6 @@ static void welcome() {
 static void init_cr0() {
 	cpu.cr0.protect_enable = 0;
 	cpu.cr0.paging = 0;
-	printf("qwq");
 }
 void init_monitor(int argc, char *argv[]) {
 	/* Perform some global initialization */
@@ -65,7 +64,7 @@ static void init_ramdisk() {
 }
 #endif
 
-static void load_entry() {
+void load_entry() {
 	int ret;
 	FILE *fp = fopen("entry", "rb");
 	Assert(fp, "Can not open 'entry'");

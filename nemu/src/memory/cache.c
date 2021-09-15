@@ -20,8 +20,6 @@ void init_cache(){
 		//memset (cache2[i].data,0,BLOCK_SIZE);
 	}
 
-    printf("qwq\n");
-
 }
 
 uint32_t Secondary_Cache_read(hwaddr_t addr)
