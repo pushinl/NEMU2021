@@ -2,8 +2,8 @@
 #include "memory/cache.h"
 #include <stdlib.h>
 #include "burst.h"
-
-
+ 
+ 
 void init_cache(){
 
 	int i;
@@ -19,9 +19,9 @@ void init_cache(){
 		cache2[i].tag = 0;
 		memset (cache2[i].data,0,BLOCK_SIZE);
 	}
-
+ 
 }
-
+ 
 uint32_t Secondary_Cache_read(hwaddr_t addr)
 {
 	uint32_t g = (addr >> 6) & ((1<<12) - 1); //group number
