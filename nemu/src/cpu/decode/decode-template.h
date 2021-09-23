@@ -5,9 +5,14 @@
 #define decode_r_internal concat3(decode_r_, SUFFIX, _internal)
 #define decode_rm_internal concat3(decode_rm_, SUFFIX, _internal)
 #define decode_i concat(decode_i_, SUFFIX)
+#define decode_n concat(decode_n_, SUFFIX)
 #define decode_a concat(decode_a_, SUFFIX)
 #define decode_r2rm concat(decode_r2rm_, SUFFIX)
 
+make_helper(concat(decode_n_, SUFFIX)) {
+	op_src->type = OP_TYPE_NO;
+	return 0;
+}
 /* Ib, Iv */
 make_helper(concat(decode_i_, SUFFIX)) {
 	/* eip here is pointing to the immediate */
@@ -33,7 +38,8 @@ make_helper(concat(decode_si_, SUFFIX)) {
 	op_src->simm = ???
 	 */
 	//panic("please implement me");
-	op_src->simm = (DATA_TYPE_S)instr_fetch(eip,DATA_BYTE);
+    op_src->simm = (DATA_TYPE_S)instr_fetch(eip, DATA_BYTE);
+
 	op_src->val = op_src->simm;
 
 #ifdef DEBUG

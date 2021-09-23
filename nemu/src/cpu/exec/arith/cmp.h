@@ -1,5 +1,5 @@
-#ifndef _CMP_H_
-#define _CMP_H_
+#ifndef __CMP_H__
+#define __CMP_H__
 
 make_helper(cmp_i2a_b);
 make_helper(cmp_i2rm_b);

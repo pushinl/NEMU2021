@@ -2,7 +2,7 @@
 #include "memory.h"
 #include <string.h>
 #include <elf.h>
-
+#include <stdio.h>
 #define ELF_OFFSET_IN_DISK 0
 
 #ifdef HAS_DEVICE
@@ -18,8 +18,7 @@ uint32_t get_ucr3();
 
 uint32_t loader() {
 	Elf32_Ehdr *elf;
-	Elf32_Phdr *ph = NULL, *eph;
-
+	Elf32_Phdr *ph = NULL;
 	uint8_t buf[4096];
 
 #ifdef HAS_DEVICE
@@ -27,37 +26,37 @@ uint32_t loader() {
 #else
 	ramdisk_read(buf, ELF_OFFSET_IN_DISK, 4096);
 #endif
-
 	elf = (void*)buf;
 
 	/* TODO: fix the magic number with the correct one */
 	const uint32_t elf_magic = 0x464c457f;
 	uint32_t *p_magic = (void *)buf;
 	nemu_assert(*p_magic == elf_magic);
-
 	/* Load each program segment */
 	//panic("please implement me");
-	for(ph = (void *)buf + elf->e_phoff, eph = ph + elf->e_phnum; ph < eph; ph ++ ) {
+	int i = 0;
+	ph = (void *)(buf+elf->e_phoff) ;
+	for(; i < elf->e_phnum ; ++i,++ph) {
 		/* Scan the program header table, load each segment into memory */
 		if(ph->p_type == PT_LOAD) {
-				uint32_t pa = ph->p_vaddr;
-
-			/* TODO: read the content of the segment from the ELF file 
-			 * to the memory region [VirtAddr, VirtAddr + FileSiz)
-			 */
-			ramdisk_read((void *)pa, ELF_OFFSET_IN_DISK + ph->p_offset, ph->p_filesz); 
-			 
-			/* TODO: zero the memory region 
-			 * [VirtAddr + FileSiz, VirtAddr + MemSiz)
-			 */
-				memset((void *)pa + ph->p_filesz, 0, ph->p_memsz - ph->p_filesz);
-				
-
+			ph->p_vaddr = mm_malloc(ph->p_vaddr, ph->p_memsz);
+			/* TODO: read the content of the segment from the ELF file
+			* to the memory region [VirtAddr, VirtAddr + FileSiz)
+			*/	
+#ifdef HAS_DEVICE
+			ide_read((void *)ph->p_vaddr,ph->p_offset,ph->p_filesz);
+#else	
+			ramdisk_read ((void *)ph->p_vaddr,ph->p_offset,ph->p_filesz);
+#endif				 
+			/* TODO: zero the memory region
+			* [VirtAddr + FileSiz, VirtAddr + MemSiz)
+			*/
+			memset ((void *)(ph->p_vaddr+ph->p_filesz),0,ph->p_memsz-ph->p_filesz);
 #ifdef IA32_PAGE
 			/* Record the program break for future use. */
-			extern uint32_t cur_brk, max_brk;
+			extern uint32_t brk;
 			uint32_t new_brk = ph->p_vaddr + ph->p_memsz - 1;
-			if(cur_brk < new_brk) { max_brk = cur_brk = new_brk; }
+			if(brk < new_brk) { brk = new_brk; }
 #endif
 		}
 	}
@@ -66,7 +65,7 @@ uint32_t loader() {
 
 #ifdef IA32_PAGE
 	mm_malloc(KOFFSET - STACK_SIZE, STACK_SIZE);
-
+create_video_mapping();
 #ifdef HAS_DEVICE
 	create_video_mapping();
 #endif
@@ -76,3 +75,4 @@ uint32_t loader() {
 
 	return entry;
 }
+

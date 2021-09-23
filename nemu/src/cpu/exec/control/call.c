@@ -1,16 +1,26 @@
 #include "cpu/exec/helper.h"
 
-#define DATA_BYTE 1
-#include "call-template.h"
-#undef DATA_BYTE
+make_helper(call_si) {
+	int len = decode_si_l(eip + 1);
+	swaddr_t ret_addr = cpu.eip + len + 1;
+	swaddr_write(cpu.esp - 4, 4, ret_addr);
+	cpu.esp -= 4;
 
-#define DATA_BYTE 2
-#include "call-template.h"
-#undef DATA_BYTE
+	cpu.eip += op_src->val;
+	print_asm("call %x", cpu.eip + 1 + len);
 
-#define DATA_BYTE 4
-#include "call-template.h"
-#undef DATA_BYTE
+	return len + 1;
+}
 
-make_helper_v(call_i)
-make_helper_v(call_rm)
+make_helper(call_rm) {
+	int len = decode_rm_l(eip + 1);
+	swaddr_t ret_addr = cpu.eip + len + 1;
+	swaddr_write(cpu.esp - 4, 4, ret_addr);
+	cpu.esp -= 4;
+
+	cpu.eip = op_src->val - (len + 1);
+	print_asm("call *%s", op_src->str);
+
+	return len + 1;
+}
+

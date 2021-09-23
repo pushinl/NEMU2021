@@ -40,5 +40,4 @@ make_helper(ljmp) {
 	return 7;
 }
 #endif
-
 #include "cpu/exec/template-end.h"

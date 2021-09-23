@@ -81,27 +81,33 @@ void load_elf_tables(int argc, char *argv[]) {
 	fclose(fp);
 }
 
-uint32_t look_up_symtab(char *sym, bool *success){
+uint32_t look_up_symtab(char *sym, bool *success) {
 	int i;
-	for(i = 0; i < nr_symtab_entry; i ++){
-	uint8_t type = ELF32_ST_TYPE(symtab[i].st_info);
-	if((type == STT_FUNC || type == STT_OBJECT) && strcmp(strtab + symtab[i].st_name, sym) == 0){
-	*success = true;
-	return symtab[i].st_value;
+	for(i = 0; i < nr_symtab_entry; i ++) {
+		uint8_t type = ELF32_ST_TYPE(symtab[i].st_info);
+		if((type == STT_FUNC || type == STT_OBJECT) && 
+				strcmp(strtab + symtab[i].st_name, sym) == 0) {
+			*success = true;
+			return symtab[i].st_value;
 		}
 	}
+
 	*success = false;
 	return 0;
 }
 
-const char* find_fun_name(uint32_t eip){
+const char* find_fun_name(uint32_t eip) {
 	static const char not_found[] = "???";
+
 	int i;
-	for(i = 0; i < nr_symtab_entry; i ++){
-		if(ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC && eip >= symtab[i].st_value && eip < symtab[i].st_value + symtab[i].st_size){
-	return strtab + symtab[i].st_name;
+	for(i = 0; i < nr_symtab_entry; i ++) {
+		if(ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC && 
+				eip >= symtab[i].st_value && eip < symtab[i].st_value + symtab[i].st_size) {
+			return strtab + symtab[i].st_name;
+		}
 	}
-	}
-return not_found;
+
+	return not_found;
 }
+
 

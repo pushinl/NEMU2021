@@ -46,3 +46,23 @@ void init_mm() {
 	ucr3.val = (uint32_t)va_to_pa((uint32_t)updir) & ~0xfff;
 }
 
+static PTE uptable_array[1][NR_PTE] align_to_page;
+
+void create_user_mapping(int uptable_id, unsigned physaddr, unsigned virtaddr)
+{
+
+    assert((physaddr & 0xfff) == 0);
+    assert((virtaddr & 0xfff) == 0);
+    assert(uptable_id == 0);
+    
+
+    unsigned dir = GET_PAGE_DIR(virtaddr);
+    unsigned page = GET_PAGE_PAGE(virtaddr);
+    
+    PTE *pt = uptable_array[uptable_id];
+    assert(((unsigned) pt & 0xfff) == 0);
+    
+    updir[dir].val = make_pde(va_to_pa(pt));
+    
+    pt[page].val = make_pte(physaddr);
+}

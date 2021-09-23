@@ -7,8 +7,18 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-void cpu_exec(uint32_t);
 
+#define TestCorrect(x) if(x){printf("Invalid Command!\n");return 0;}
+void cpu_exec(uint32_t);
+void display_reg();
+extern struct Cache
+{
+	bool valid;
+	int tag;
+	uint8_t data[64];
+}cache[1024];
+uint32_t cache_read(hwaddr_t);
+hwaddr_t page_translate_additional(lnaddr_t addr,int* flag);
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 char* rl_gets() {
 	static char *line_read = NULL;
@@ -27,6 +37,128 @@ char* rl_gets() {
 	return line_read;
 }
 
+/* TODO: Add single step */
+static int cmd_si(char *args) {
+	char *arg = strtok(NULL, " ");
+	int i = 1;
+
+	if(arg != NULL) {
+		sscanf(arg, "%d", &i);
+	}
+	cpu_exec(i);
+	return 0;
+}
+
+/* TODO: Add info command */
+static int cmd_info(char *args) {
+	char *arg = strtok(NULL, " ");
+
+	if(arg != NULL) {
+		if(strcmp(arg, "r") == 0) {
+			display_reg();
+		}
+		else if(strcmp(arg, "w") == 0) {
+			list_watchpoint();
+		}
+	}
+	return 0;
+}
+
+/* Add examine memory */
+static int cmd_x(char *args) {
+	char *arg = strtok(NULL, " ");
+	int n;
+	swaddr_t addr;
+	int i;
+
+	if(arg != NULL) {
+		sscanf(arg, "%d", &n);
+
+		bool success;
+		addr = expr(arg + strlen(arg) + 1, &success);
+		if(success) {
+			current_sreg = R_DS;
+			for(i = 0; i < n; i ++) {
+				if(i % 4 == 0) {
+					printf("0x%08x: ", addr);
+				}
+
+				printf("0x%08x ", swaddr_read(addr, 4));
+				addr += 4;
+				if(i % 4 == 3) {
+					printf("\n");
+				}
+			}
+			printf("\n");
+		}
+		else { printf("Bad expression\n"); }
+
+	}
+	return 0;
+}
+
+/* Add expression evaluation  */
+static int cmd_p(char *args) {
+	bool success;
+
+	if(args) {
+		uint32_t r = expr(args, &success);
+		if(success) {
+			current_sreg = R_DS;
+			printf("0x%08x(%d)\n", r, r); }
+		else { printf("Bad expression\n"); }
+	}
+	return 0;
+}
+
+/* Add set watchpoint  */
+static int cmd_w(char *args) {
+	if(args) {
+		int NO = set_watchpoint(args);
+		if(NO != -1) { printf("Set watchpoint #%d\n", NO); }
+		else { printf("Bad expression\n"); }
+	}
+	return 0;
+}
+
+/* Add delete watchpoint */
+static int cmd_d(char *args) {
+	int NO;
+	sscanf(args, "%d", &NO);
+	if(!delete_watchpoint(NO)) {
+		printf("Watchpoint #%d does not exist\n", NO);
+	}
+
+	return 0;
+}
+
+/* Add display backtrace */
+static int cmd_bt(char *args) {
+	const char* find_fun_name(uint32_t eip);
+	struct {
+		swaddr_t prev_ebp;
+		swaddr_t ret_addr;
+		uint32_t args[4];
+	} sf;
+
+	uint32_t ebp = cpu.ebp;
+	uint32_t eip = cpu.eip;
+	int i = 0;
+	while(ebp != 0) {
+		sf.args[0] = swaddr_read(ebp + 8, 4);
+		sf.args[1] = swaddr_read(ebp + 12, 4);
+		sf.args[2] = swaddr_read(ebp + 16, 4);
+		sf.args[3] = swaddr_read(ebp + 20, 4);
+
+		printf("#%d 0x%08x in %s (0x%08x 0x%08x 0x%08x 0x%08x)\n", i, eip, find_fun_name(eip), sf.args[0], sf.args[1], sf.args[2], sf.args[3]);
+		i ++;
+		eip = swaddr_read(ebp + 4, 4);
+		ebp = swaddr_read(ebp, 4);
+	}
+	return 0;
+}
+
+
 static int cmd_c(char *args) {
 	cpu_exec(-1);
 	return 0;
@@ -38,130 +170,28 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
-static int cmd_si(char *args) {
-	if(args != NULL) cpu_exec(atoi(args));
-	else cpu_exec(1);
+static int cmd_cache(char *args) {
+	swaddr_t addr;
+	sscanf (args,"%x",&addr);
+	int i = cache_read(addr);
+	printf ("addr = 0x%x\nlocation = %d\ntag = 0x%x\n",addr,i,cache[i].tag);
+	int j = 0;
+	for (;j < 64;j++)
+		printf ("%x ",cache[i].data[j]);
+	printf ("\n");
 	return 0;
 }
-
-static int cmd_info(char *args) {
-	if(args == NULL) return 0;
-	char opt;
-	sscanf(args, " %c", &opt);
-	if(opt == 'r') {
-		printf("%%eax:    0x%x    %d\n", cpu.eax, cpu.eax);
-		printf("%%ecx:    0x%x    %d\n", cpu.ecx, cpu.ecx);
-		printf("%%edx:    0x%x    %d\n", cpu.edx, cpu.edx);
-		printf("%%ebx:    0x%x    %d\n", cpu.ebx, cpu.ebx);
-		printf("%%esp:    0x%x    %d\n", cpu.esp, cpu.esp);
-		printf("%%ebp:    0x%x    %d\n", cpu.ebp, cpu.ebp);
-		printf("%%esi:    0x%x    %d\n", cpu.esi, cpu.esi);
-		printf("%%edi:    0x%x    %d\n", cpu.edi, cpu.edi);
-		printf("%%eip:    0x%x    %d\n", cpu.eip, cpu.eip);
-	} else if(opt == 'w') {
-		info_wp();
-	}
+static int cmd_page(char* args) {
+	TestCorrect(args == NULL);
+	uint32_t addr;
+	sscanf(args, "%x", &addr);
+	int flag = 0;
+	uint32_t real_addr = page_translate_additional(addr,&flag);
+	if (flag == 0) printf("0x%08x\n",real_addr);
+	else if (flag == 1) printf("Dir Cannot Be Used!\n");
+	else printf("Page Cannot Be Used!\n");
 	return 0;
 }
-
-static int cmd_x(char *args) {
-	if(args == NULL) return 0;
-	int n = 0;
-	bool success = true;
-	uint32_t ram_addr_start;
-	while(args[0] == ' ') args++;
-	while('0' <= args[0] && args[0] <= '9') n = (n << 3) + (n << 1) + (args[0] & 15), args++;
-	ram_addr_start = expr(args, &success);
-	if(!success) {
-		printf("Expression Error!\n");
-		return 0;
-	}
-	//printf("%x", ram_addr_start);
-	int i, cnt = 0;
-	for(i = 0; i < n; i++) {
-		cnt++;
-		if(cnt % 4 == 1) printf("0x%x: ", ram_addr_start);
-		/*
-		for(j = 0; j < 4; j++){
-			uint32_t data = swaddr_read(ram_addr_start++, 1);
-			printf("0x%02x ", data & 0xff);
-		}*/
-		uint32_t data = swaddr_read(ram_addr_start, 4);
-		printf("0x%08x ", data);
-		ram_addr_start += 4;
-		if(cnt % 4 == 0) printf("\n");
-	}
-	printf("\n");
-	return 0;
-}
-
-static int cmd_p(char *args){
-	if(args == NULL) return 0;
-	bool success = true;
-	uint32_t EXPR = expr(args, &success);
-	if(!success) {
-		printf("Expression Error!\n");
-		return 0;
-	}
-	printf("0x08%x\n", EXPR);
-	return 0;
-}
-
-static int cmd_w(char *args){
-	if(args == NULL) return 0;
-	WP *wp;
-	bool success = true;
-	uint32_t value;
-	value = expr(args, &success);
-	if(!success) {
-		printf("Expression Error!\n");
-		return 0;
-	}
-	wp = new_wp();
-	strcpy(wp->expr, args);
-	wp->val = value;
-	printf("WatchPoint %d : %s is set.\n", wp->NO, wp->expr);
-	printf("Value : 0x%x\n", wp->val);
-	return 0;
-}
-
-static int cmd_d(char *args) {
-	int num;
-	if (args==NULL) {
-		printf("Need more arguments, please inset an integer to appoint the WatchPoint.\n");
-	} else {
-		num = atoi(args);
-		delete_wp(num);
-	}
-	return 0;
-}
-
-static int cmd_bt(char *args){
-	const char* find_fun_name(uint32_t eip);
-	struct{
-	swaddr_t prev_ebp;
-	swaddr_t ret_addr;
-	uint32_t args[4];
-	}sf;
-
-	uint32_t ebp = cpu.ebp;
-	uint32_t eip = cpu.eip;
-	int i;
-	i = 0;
-	while(ebp != 0){
-	sf.args[0] = swaddr_read(ebp + 8, 4);
-	sf.args[1] = swaddr_read(ebp + 12, 4);
-	sf.args[2] = swaddr_read(ebp + 16, 4);
-	sf.args[3] = swaddr_read(ebp + 20, 4);
-	
-	printf("#%d 0x%08x in %s (0x%08x 0x%08x 0x%08x 0x%08x)\n", i, eip, find_fun_name(eip), sf.args[0],sf.args[1], sf.args[2], sf.args[3]);
-	i ++;
-	eip = swaddr_read(ebp + 4, 4);
-	ebp = swaddr_read(ebp, 4);
-	}
-	return 0;
-}
-
 static struct {
 	char *name;
 	char *description;
@@ -170,14 +200,17 @@ static struct {
 	{ "help", "Display informations about all supported commands", cmd_help },
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
-	{ "si", "Excecute the program N steps", cmd_si },
-	{ "info", "r - Print the value of registers/ w - Print the WatchPoint", cmd_info },
-	{ "x", "Scan the RAM", cmd_x },
-	{ "p", "Expression evaluation", cmd_p },
-	{ "w", "Add a WatchPoint", cmd_w },
-	{ "d", "Delete a WatchPoint", cmd_d},
-	{ "bt", "Print stack frame chain", cmd_bt},
+
 	/* TODO: Add more commands */
+        { "si", "Single step", cmd_si },
+        { "info", "info r - print register values; info w - show watch point state", cmd_info },
+	{ "x", "Examine memory", cmd_x },
+        { "p", "Evaluate the value of expression", cmd_p },
+	{ "w", "Set watchpoint", cmd_w },
+	{ "d", "Delete watchpoint", cmd_d },
+	{ "bt", "Display backtrace", cmd_bt },
+	{  "cache", "Print information ", cmd_cache},
+	{ "page","Print page information", cmd_page},
 
 };
 
@@ -216,8 +249,8 @@ void ui_mainloop() {
 		if(cmd == NULL) { continue; }
 
 		/* treat the remaining string as the arguments,
-		 * which may need further parsing
-		 */
+		* which may need further parsing
+		*/
 		char *args = cmd + strlen(cmd) + 1;
 		if(args >= str_end) {
 			args = NULL;
@@ -239,3 +272,4 @@ void ui_mainloop() {
 		if(i == NR_CMD) { printf("Unknown command '%s'\n", cmd); }
 	}
 }
+

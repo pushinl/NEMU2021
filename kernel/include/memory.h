@@ -12,6 +12,8 @@
 #define va_to_pa(addr) ((void*)(((uint32_t)(addr)) - KOFFSET))
 #define pa_to_va(addr) ((void*)(((uint32_t)(addr)) + KOFFSET))
 
+#define GET_PAGE_PAGE(addr) (((addr) >> 12) & 0x3ff)
+#define GET_PAGE_DIR(addr) (((addr) >> 22) & 0x3ff)
 /* the maxinum loader size is 16MB */
 #define KMEM      (16 * 1024 * 1024)
 
